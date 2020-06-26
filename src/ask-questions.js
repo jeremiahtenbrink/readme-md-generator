@@ -13,7 +13,7 @@ const utils = require('./utils')
 module.exports = async (projectInfos, useDefaultAnswers) => {
   const questions = flatMap(Object.values(questionsBuilders), questionBuilder => {
     console.log(questionBuilder)
-    questionBuilder(projectInfos)
+    return questionBuilder(projectInfos)
   })
   let answerContext = []
   const fileExists = utils.doesFileExist('./config.json')
