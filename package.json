@@ -1,7 +1,7 @@
 {
-  "name": "readme-md-generator",
+  "name": "@tenbrink/readme-gen",
   "version": "1.0.0",
-  "description": "CLI that generates beautiful README.md files.",
+  "description": "CLI that generates a beautiful README.md files.",
   "main": "src/index.js",
   "bin": {
     "readme": "src/index.js"
