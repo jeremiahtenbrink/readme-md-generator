@@ -228,6 +228,8 @@ const setNewConfigJsonFile = (arrayStrings) => {
   })
   
   fs.writeFileSync('./config.json', JSON.stringify(jsonObject))
+  console.log('new config file')
+  console.log(jsonObject)
   
 }
 
