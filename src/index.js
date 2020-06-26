@@ -7,7 +7,6 @@ const mainProcess = require('./cli')
 let setConfig = false
 
 if ( yargs.length > 0 ) {
-  console.log(yargs.argv)
   if ( 'set' in yargs.argv ) {
     setConfig = true
     let array = [yargs.argv[ 'set' ]]
