@@ -90,26 +90,6 @@ const getDefaultAnswer = async (question, answersContext) => {
   }
 }
 
-/**
- * Get the default answer depending on the question type
- *
- * @param {Object} question
- */
-const getFromConfigJson = async (question, answersContext) => {
-  if ( question.when && !question.when(answersContext) ) return undefined
-  
-  switch ( question.type ) {
-    case 'input':
-      return typeof question.default === 'function' ? question.default(answersContext) :
-        question.default || ''
-    case 'checkbox':
-      return question.choices
-        .filter(choice => choice.checked)
-        .map(choice => choice.value)
-    default:
-      return undefined
-  }
-}
 
 /**
  * Return true if the project is available on NPM, return false otherwise.
@@ -182,6 +162,24 @@ const doesFileExist = filepath => {
 }
 
 /**
+ * Get the answer from a config.json if it exists
+ *
+ * @param {questions[]} questions
+ */
+const getAnswersFromConfigJson = async (questions, answersContext) => {
+  if ( doesFileExist('./config.json') ) {
+    const file = await fs.readFileSync('./config.json')
+    const jsonObject = JSON.parse(file)
+    questions.forEach(question => {
+      if ( jsonObject[ question.name ] ) {
+        answersContext[ question.name ] = jsonObject[ question.name ]
+      }
+    })
+  }
+  
+}
+
+/**
  * Returns the package manager from the lock file
  *
  * @returns {String} packageManger or undefined
@@ -198,8 +196,9 @@ const getPackageManagerFromLockFile = () => {
 
 const valuesToRemove = ['"', '\'', '!', '@', '&', '']
 const validKeys = [
-  'github', 'linkedin', 'author', 'patreon', 'twitter', 'website', 'dev.to', 'install-command',
-  'medium', 'package-manager'
+  'authorGithubUsername', 'authorLinkedInUsername', 'authorName', 'authorPatreonUsername',
+  'authorTwitterUsername', 'authorWebsite', 'devToProfileName', 'installCommand',
+  'mediumProfileUserName', 'packageManager'
 ]
 
 const setNewConfigJsonFile = (arrayStrings) => {
@@ -241,7 +240,7 @@ module.exports = {
   BOXEN_CONFIG,
   getDefaultAnswers,
   getDefaultAnswer,
-  getFromConfigJson,
+  getAnswersFromConfigJson,
   cleanSocialNetworkUsername,
   isProjectAvailableOnNpm,
   getAuthorWebsiteFromGithubAPI,

@@ -28,7 +28,8 @@
     "indent": 0,
     "no-param-reassign": 0,
     "function-paren-newline": 0,
-    "arrow-parens": 0
+    "arrow-parens": 0,
+    "linebreak-style": "off"
   },
   "parserOptions": {
     "parser": "babel-eslint"
