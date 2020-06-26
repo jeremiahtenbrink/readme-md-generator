@@ -11,19 +11,24 @@ const utils = require('./utils')
  * @param {Boolean} useDefaultAnswers
  */
 module.exports = async (projectInfos, useDefaultAnswers) => {
-  const questions = flatMap(Object.values(questionsBuilders), questionBuilder =>
-    questionBuilder(projectInfos)
-  )
-
-  const answersContext = useDefaultAnswers
-    ? await utils.getDefaultAnswers(questions)
-    : await inquirer.prompt(questions)
-
+  const answersContext = {}
+  let questions = flatMap(Object.values(questionsBuilders), questionBuilder => {
+    console.log(questionBuilder)
+    return questionBuilder(projectInfos)
+  })
+  
+  const fileExists = utils.doesFileExist('./config.json')
+  if ( fileExists ) {
+    await utils.getAnswersFromConfigJson(questions, answersContext)
+  }
+  questions = questions.filter(question => !(question.name in answersContext))
+  let defaultAnswersContext = useDefaultAnswers ? utils.getDefaultAnswers(questions) :
+    await inquirer.prompt(questions)
+  defaultAnswersContext = [...defaultAnswersContext, answersContext]
   return {
     isGithubRepos: projectInfos.isGithubRepos,
     repositoryUrl: projectInfos.repositoryUrl,
     projectPrerequisites: undefined,
-    isProjectOnNpm: utils.isProjectAvailableOnNpm(answersContext.projectName),
-    ...answersContext
+    isProjectOnNpm: utils.isProjectAvailableOnNpm(answersContext.projectName), ...defaultAnswersContext
   }
 }

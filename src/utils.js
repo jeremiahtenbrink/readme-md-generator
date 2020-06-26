@@ -16,7 +16,10 @@ const GITHUB_API_URL = 'https://api.github.com'
 
 const BOXEN_CONFIG = {
   padding: 1,
-  margin: { top: 2, bottom: 3 },
+  margin: {
+    top: 2,
+    bottom: 3
+  },
   borderColor: 'cyan',
   align: 'center',
   borderStyle: 'double'
@@ -42,7 +45,7 @@ const getGitRepositoryName = cwd => {
   try {
     return getReposName.sync({ cwd })
     // eslint-disable-next-line no-empty
-  } catch (err) {
+  } catch ( err ) {
     return undefined
   }
 }
@@ -52,11 +55,7 @@ const getGitRepositoryName = cwd => {
  */
 const getProjectName = packageJson => {
   const cwd = process.cwd()
-  return (
-    getPackageJsonName(packageJson) ||
-    getGitRepositoryName(cwd) ||
-    path.basename(cwd)
-  )
+  return (getPackageJsonName(packageJson) || getGitRepositoryName(cwd) || path.basename(cwd))
 }
 
 /**
@@ -65,7 +64,7 @@ const getProjectName = packageJson => {
 const getPackageJson = async () => {
   try {
     return await loadJsonFile('package.json')
-  } catch (err) {
+  } catch ( err ) {
     return undefined
   }
 }
@@ -76,13 +75,12 @@ const getPackageJson = async () => {
  * @param {Object} question
  */
 const getDefaultAnswer = async (question, answersContext) => {
-  if (question.when && !question.when(answersContext)) return undefined
-
-  switch (question.type) {
+  if ( question.when && !question.when(answersContext) ) return undefined
+  
+  switch ( question.type ) {
     case 'input':
-      return typeof question.default === 'function'
-        ? question.default(answersContext)
-        : question.default || ''
+      return typeof question.default === 'function' ? question.default(answersContext) :
+        question.default || ''
     case 'checkbox':
       return question.choices
         .filter(choice => choice.checked)
@@ -91,6 +89,7 @@ const getDefaultAnswer = async (question, answersContext) => {
       return undefined
   }
 }
+
 
 /**
  * Return true if the project is available on NPM, return false otherwise.
@@ -102,7 +101,7 @@ const isProjectAvailableOnNpm = projectName => {
   try {
     execSync(`npm view ${projectName}`, { stdio: 'ignore' })
     return true
-  } catch (err) {
+  } catch ( err ) {
     return false
   }
 }
@@ -112,15 +111,14 @@ const isProjectAvailableOnNpm = projectName => {
  *
  * @param {Array} questions
  */
-const getDefaultAnswers = questions =>
-  questions.reduce(async (answersContextProm, question) => {
-    const answersContext = await answersContextProm
-
-    return {
-      ...answersContext,
-      [question.name]: await getDefaultAnswer(question, answersContext)
-    }
-  }, Promise.resolve({}))
+const getDefaultAnswers = questions => questions.reduce(async (answersContextProm, question) => {
+  const answersContext = await answersContextProm
+  
+  return {
+    ...answersContext,
+    [ question.name ]: await getDefaultAnswer(question, answersContext)
+  }
+}, Promise.resolve({}))
 
 /**
  * Clean social network username by removing the @ prefix and
@@ -129,8 +127,7 @@ const getDefaultAnswers = questions =>
  * @param input social network username input
  * @returns {*} escaped input without the prefix
  */
-const cleanSocialNetworkUsername = input =>
-  escapeMarkdown(input.replace(/^@/, ''))
+const cleanSocialNetworkUsername = input => escapeMarkdown(input.replace(/^@/, ''))
 
 /**
  * Get author's website from Github API
@@ -140,14 +137,11 @@ const cleanSocialNetworkUsername = input =>
  */
 const getAuthorWebsiteFromGithubAPI = async githubUsername => {
   try {
-    const userData = await fetch(
-      `${GITHUB_API_URL}/users/${githubUsername}`
-    ).then(res => res.json())
+    const userData = await fetch(`${GITHUB_API_URL}/users/${githubUsername}`)
+      .then(res => res.json())
     const authorWebsite = userData.blog
-    return isNil(authorWebsite) || isEmpty(authorWebsite)
-      ? undefined
-      : authorWebsite
-  } catch (err) {
+    return isNil(authorWebsite) || isEmpty(authorWebsite) ? undefined : authorWebsite
+  } catch ( err ) {
     return undefined
   }
 }
@@ -161,9 +155,28 @@ const getAuthorWebsiteFromGithubAPI = async githubUsername => {
 const doesFileExist = filepath => {
   try {
     return fs.existsSync(filepath)
-  } catch (err) {
+  } catch ( err ) {
+    console.log(err)
     return false
   }
+}
+
+/**
+ * Get the answer from a config.json if it exists
+ *
+ * @param {questions[]} questions
+ */
+const getAnswersFromConfigJson = async (questions, answersContext) => {
+  if ( doesFileExist('./config.json') ) {
+    const file = await fs.readFileSync('./config.json')
+    const jsonObject = JSON.parse(file)
+    questions.forEach(question => {
+      if ( jsonObject[ question.name ] ) {
+        answersContext[ question.name ] = jsonObject[ question.name ]
+      }
+    })
+  }
+  
 }
 
 /**
@@ -174,12 +187,50 @@ const doesFileExist = filepath => {
 const getPackageManagerFromLockFile = () => {
   const packageLockExists = doesFileExist('package-lock.json')
   const yarnLockExists = doesFileExist('yarn.lock')
-
-  if (packageLockExists && yarnLockExists) return undefined
-  if (packageLockExists) return 'npm'
-  if (yarnLockExists) return 'yarn'
+  
+  if ( packageLockExists && yarnLockExists ) return undefined
+  if ( packageLockExists ) return 'npm'
+  if ( yarnLockExists ) return 'yarn'
   return undefined
 }
+
+const valuesToRemove = ['"', '\'', '!', '@', '&', '']
+const validKeys = [
+  'authorGithubUsername', 'authorLinkedInUsername', 'authorName', 'authorPatreonUsername',
+  'authorTwitterUsername', 'authorWebsite', 'devToProfileName', 'installCommand',
+  'mediumProfileUserName', 'packageManager'
+]
+
+const setNewConfigJsonFile = (arrayStrings) => {
+  const fileExists = doesFileExist('./config.json')
+  let jsonObject = {}
+  if ( fileExists ) {
+    const file = fs.readFileSync('./config.json')
+    jsonObject = JSON.parse(file)
+  }
+  
+  arrayStrings.forEach(keyValue => {
+    const index = keyValue.indexOf('=')
+    const firstHalf = keyValue.slice(0, index)
+      .trim()
+    const secondHalf = keyValue.slice(index + 1, keyValue.length)
+      .trim()
+    valuesToRemove.forEach(char => {
+      firstHalf.replace(char, '')
+      secondHalf.replace(char, '')
+    })
+    
+    if ( validKeys.includes(firstHalf.toLowerCase()) && secondHalf.length > 0 ) {
+      
+      jsonObject[ firstHalf ] = secondHalf
+    }
+    
+  })
+  
+  fs.writeFileSync('./config.json', JSON.stringify(jsonObject))
+  
+}
+
 
 module.exports = {
   getPackageJson,
@@ -189,9 +240,11 @@ module.exports = {
   BOXEN_CONFIG,
   getDefaultAnswers,
   getDefaultAnswer,
+  getAnswersFromConfigJson,
   cleanSocialNetworkUsername,
   isProjectAvailableOnNpm,
   getAuthorWebsiteFromGithubAPI,
   getPackageManagerFromLockFile,
-  doesFileExist
+  doesFileExist,
+  setNewConfigJsonFile
 }
