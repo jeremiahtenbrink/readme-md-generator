@@ -167,8 +167,8 @@ const doesFileExist = filepath => {
  * @param {questions[]} questions
  */
 const getAnswersFromConfigJson = async (questions, answersContext) => {
-  if ( doesFileExist('./config.json') ) {
-    const file = await fs.readFileSync('./config.json')
+  if ( doesFileExist(path.join(__dirname, './config.json')) ) {
+    const file = await fs.readFileSync(path.join(__dirname, './config.json'))
     const jsonObject = JSON.parse(file)
     questions.forEach(question => {
       if ( jsonObject[ question.name ] ) {
@@ -202,10 +202,10 @@ const validKeys = [
 ]
 
 const setNewConfigJsonFile = (arrayStrings) => {
-  const fileExists = doesFileExist('./config.json')
+  const fileExists = doesFileExist(path.join(__dirname, './config.json'))
   let jsonObject = {}
   if ( fileExists ) {
-    const file = fs.readFileSync('./config.json')
+    const file = fs.readFileSync(path.join(__dirname, './config.json'))
     jsonObject = JSON.parse(file)
   }
   
@@ -220,14 +220,17 @@ const setNewConfigJsonFile = (arrayStrings) => {
       secondHalf.replace(char, '')
     })
     
-    if ( validKeys.includes(firstHalf.toLowerCase()) && secondHalf.length > 0 ) {
-      
+    if ( validKeys.includes(firstHalf) && secondHalf.length > 0 ) {
+      console.log('Adding key: ', firstHalf)
       jsonObject[ firstHalf ] = secondHalf
+    } else {
+      console.log('Key: ', firstHalf)
+      console.log('Not one of the allowed values to set.')
     }
     
   })
   
-  fs.writeFileSync('./config.json', JSON.stringify(jsonObject))
+  fs.writeFileSync(path.join(__dirname, './config.json'), JSON.stringify(jsonObject))
   console.log('new config file')
   console.log(jsonObject)
   

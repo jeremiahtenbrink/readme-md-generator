@@ -20,5 +20,7 @@ module.exports = {
   askContributingUrl: require('./contributing-url'),
   askInstallCommand: require('./install-command'),
   askUsage: require('./usage'),
-  askTestCommand: require('./test-command')
+  askTestCommand: require('./test-command'),
+  mediumProfileUserName: require('./medium-profile'),
+  devToProfileName: require('./dev-to')
 }

@@ -39,18 +39,19 @@
     <img alt="Medium: <%= mediumProfileUserName %>" src="https://img.shields.io
     /twitter/follow/<%= authorTwitterUsername %>.svg?style=social" />
   </a>
-</p>
+
 <% } -%>
 <% if (devToProfileName) { -%>
   <a href="https://dev.to/<%= devToProfileName %>" target="_blank">
-    <img alt="Medium: <%= devToProfileName %>" src="https://img.shields.io
+    <img alt="Dev.to: <%= devToProfileName %>" src="https://img.shields.io
     /twitter/follow/<%= devToProfileName %>.svg?style=social" />
   </a>
+  <% } -%>
 </p>
-<% } -%>
+
 <% if (projectDescription) { -%>
 
-> <%= projectDescription %>
+<%= projectDescription %>
 <% } -%>
 <% if (projectHomepage) { -%>
 
