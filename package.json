@@ -28,6 +28,8 @@
     "prettier": "^1.17.1"
   },
   "scripts": {
+    "migrate": "knex migrate:latest --env production",
+    "rollback": "knex migrate:rollback --env production",
     "lint": "eslint src",
     "prettier": "prettier \"**/*.{js,md,json}\"",
     "prettier:check": "npm run prettier -- --check",
